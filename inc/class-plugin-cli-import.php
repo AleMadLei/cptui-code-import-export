@@ -15,6 +15,12 @@ class CPTUI_Import_Export_Command {
    */
   function import($args, $assoc_args) {
 
+    // Confirmation is skipped.
+    $skip_confirmation = FALSE;
+    if (in_array('-y', $args)) {
+      $skip_confirmation = TRUE;
+    }
+
     // If configuration folder is not set...
     $config_folder = apply_filters('cptui_ie_folder', NULL);
     if (empty($config_folder)) {
@@ -51,9 +57,22 @@ class CPTUI_Import_Export_Command {
         // If content differs, loads the configuration from file.
         if ($current_content != $loaded_entity_type_content) {
 
-          // Asks user to confirm
-          $confirmation = WP_CLI::confirm(sprintf(__('Do you want to load custom %s from configuration file? (This cannot be reverted)', 'cptui-ie'), $label), $assoc_args);
-          if ($confirmation) {
+          $message = sprintf(__('Do you want to load custom %s from configuration file? (This cannot be reverted) (y/n)', 'cptui-ie'), $label);
+          do {
+
+            // If confirmation is not skipped, reads the value from user input.
+            if (!$skip_confirmation) {
+              $continue = readline($message);
+            }
+            else {
+              $continue = 'y';
+              WP_CLI::line($message);
+            }
+          }
+          while (strtolower($continue) != 'n' && strtolower($continue) != 'y');
+
+          // Runs the import command if confirmed.
+          if ($continue == 'y') {
             WP_CLI::runcommand("cptui import --type={$key} --data-path={$entity_types_file}");
           }
 
@@ -78,6 +97,12 @@ class CPTUI_Import_Export_Command {
    * @when after_wp_load
    */
   function export($args, $assoc_args) {
+
+    // Confirmation is skipped.
+    $skip_confirmation = FALSE;
+    if (in_array('-y', $args)) {
+      $skip_confirmation = TRUE;
+    }
 
     // If configuration folder is not set...
     $config_folder = apply_filters('cptui_ie_folder', NULL);
@@ -105,19 +130,27 @@ class CPTUI_Import_Export_Command {
 
       // Reads confirmation from the user.
       $entity_types_file = "{$config_folder}/{$key}.json";
+      $continue = '';
       do {
         $message = NULL;
         if (!file_exists($entity_types_file)) {
           $message = sprintf(__('Do you want to create the %s file? (This cannot be reverted) (y/n)', 'cptui-ie'), $label);
-        }
-        else {
+        } else {
           $message = sprintf(__('Do you want to overwrite the %s file? (This cannot be reverted) (y/n)', 'cptui-ie'), $label);
         }
-        $continue = readline($message);
+
+        // If confirmation is not skipped, reads the value from user input.
+        if (!$skip_confirmation) {
+          $continue = readline($message);
+        }
+        else {
+          $continue = 'y';
+          WP_CLI::line($message);
+        }
       }
       while (strtolower($continue) != 'n' && strtolower($continue) != 'y');
 
-      // If the file is to be written.
+      // Runs the export command if confirmed.
       if ($continue == 'y') {
         $result = WP_CLI::runcommand("cptui export --type={$key} --dest-path={$entity_types_file}");
       }
