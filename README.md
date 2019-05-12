@@ -1,4 +1,4 @@
-# Custom Post Types UI Import Export
+# Custom Post Type UI Import Export
 This plugin exposes a hook and an admin screen to export the custom post type configuration and custom taxonomies created
 with Custom Post Type UI plugin.
 
@@ -12,6 +12,12 @@ to custom post types.
 
 Being that I tend to prefer version control, and I wanted to have this as automated as possible, this plugin exposes a couple hook 
 where modules can define the path where the files will be located, then compared to check for changes and update if changes are found.
+
+## Why not use the default functionality on Custom Post Types UI
+Human error. Sometimes I'm not the one doing deployments. Because of this, I prefer most of the workflow to be as automated as possible.
+
+## Other alternatives?
+Probably there are, but I did a 10 minute search and besides finding other people wanting to do something similar, didn't find any solution. 
 
 # How to use?
 ## Admin screens
